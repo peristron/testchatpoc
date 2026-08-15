@@ -8,7 +8,7 @@ from chat_client import ChatAPIError, Provider, stream_chat
 
 
 st.set_page_config(
-    page_title="Chinese AI Gateway",
+    page_title="  AI Gateway",
     layout="wide",
 )
 
@@ -113,7 +113,7 @@ PORTALS = [
         "name": "iFlytek Spark",
         "company": "iFlytek",
         "url": "https://xinghuo.xfyun.cn/desk",
-        "description": "Chinese-language chat, writing, and productivity tools.",
+        "description": " -language chat, writing, and productivity tools.",
         "availability": "China-focused; regional sign-in may apply",
     },
     {
@@ -155,7 +155,7 @@ def require_password() -> None:
     if st.session_state.get("authenticated", False):
         return
 
-    st.title("Chinese AI Gateway")
+    st.title("  AI Gateway")
     st.caption("Enter the shared access password to continue.")
 
     with st.form("login_form", clear_on_submit=True):
@@ -291,7 +291,7 @@ def main() -> None:
     require_password()
 
     with st.sidebar:
-        st.header("Chinese AI Gateway")
+        st.header("  AI Gateway")
         st.write(
             "Use official consumer portals without API keys, or chat directly "
             "through APIs you have configured."
@@ -304,7 +304,7 @@ def main() -> None:
             "API requests may incur charges on the app owner's provider accounts."
         )
 
-    st.title("Chinese AI Gateway")
+    st.title("  AI Gateway")
     st.caption("Official chat portals and private API access in one place.")
 
     portals_tab, api_tab = st.tabs(["Official chat portals", "API chat"])
