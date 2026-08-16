@@ -39,7 +39,7 @@ PROVIDERS = {
         name="GLM",
         api_key_secret="GLM_API_KEY",
         base_url="https://api.z.ai/api/paas/v4",
-        default_model="glm-5.1",
+        default_model="glm-4.7-flash",
         model_secret="GLM_MODEL",
     ),
     "MiniMax": Provider(
@@ -48,6 +48,27 @@ PROVIDERS = {
         base_url="https://api.minimax.io/v1",
         default_model="MiniMax-M2.7",
         model_secret="MINIMAX_MODEL",
+    ),
+    "Mistral": Provider(
+        name="Mistral",
+        api_key_secret="MISTRAL_API_KEY",
+        base_url="https://api.mistral.ai/v1",
+        default_model="mistral-small-latest",
+        model_secret="MISTRAL_MODEL",
+    ),
+    "Cohere": Provider(
+        name="Cohere",
+        api_key_secret="COHERE_API_KEY",
+        base_url="https://api.cohere.ai/compatibility/v1",
+        default_model="command-a-plus-05-2026",
+        model_secret="COHERE_MODEL",
+    ),
+    "SEA-LION": Provider(
+        name="SEA-LION",
+        api_key_secret="SEALION_API_KEY",
+        base_url="https://api.sea-lion.ai/v1",
+        default_model="aisingapore/Gemma-SEA-LION-v4-27B-IT",
+        model_secret="SEALION_MODEL",
     ),
 }
 
@@ -121,7 +142,7 @@ PORTALS = [
         "name": "iFlytek Spark",
         "company": "iFlytek",
         "url": "https://xinghuo.xfyun.cn/desk",
-        "description": "asia-language chat, writing, and productivity tools.",
+        "description": " -language chat, writing, and productivity tools.",
         "availability": "asia-focused; regional sign-in may apply",
         "type": "Chat portal",
     },
