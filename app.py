@@ -8,7 +8,7 @@ from chat_client import ChatAPIError, Provider, stream_chat
 
 
 st.set_page_config(
-    page_title="  AI Gateway",
+    page_title="AI Gateway",
     layout="wide",
 )
 
@@ -59,6 +59,7 @@ PORTALS = [
         "url": "https://chat.deepseek.com/",
         "description": "General chat, reasoning, writing, and coding.",
         "availability": "International portal",
+        "type": "Chat portal",
     },
     {
         "name": "Kimi",
@@ -66,6 +67,7 @@ PORTALS = [
         "url": "https://www.kimi.com/",
         "description": "Long-context chat, research, files, and agentic work.",
         "availability": "International portal",
+        "type": "Chat portal",
     },
     {
         "name": "Qwen Chat",
@@ -73,6 +75,7 @@ PORTALS = [
         "url": "https://chat.qwen.ai/",
         "description": "Multilingual chat, reasoning, coding, and multimodal tools.",
         "availability": "International portal",
+        "type": "Chat portal",
     },
     {
         "name": "Z.ai Chat",
@@ -80,6 +83,7 @@ PORTALS = [
         "url": "https://chat.z.ai/",
         "description": "GLM-powered chat, reasoning, research, and agents.",
         "availability": "International portal",
+        "type": "Chat portal",
     },
     {
         "name": "MiniMax Agent",
@@ -87,48 +91,175 @@ PORTALS = [
         "url": "https://agent.minimax.io/",
         "description": "General chat and multi-step agent tasks.",
         "availability": "International portal",
+        "type": "Chat portal",
     },
     {
         "name": "Doubao",
         "company": "ByteDance",
         "url": "https://www.doubao.com/chat/",
         "description": "Chat, writing, search, images, and creative tools.",
-        "availability": "China-focused; regional sign-in may apply",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
     },
     {
         "name": "Yuanbao",
         "company": "Tencent",
         "url": "https://yuanbao.tencent.com/",
         "description": "Tencent's consumer assistant for chat and research.",
-        "availability": "China-focused; regional sign-in may apply",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
     },
     {
         "name": "ERNIE",
         "company": "Baidu",
         "url": "https://ernie.baidu.com/",
         "description": "Baidu's assistant for chat, creation, and web search.",
-        "availability": "China-focused; regional sign-in may apply",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
     },
     {
         "name": "iFlytek Spark",
         "company": "iFlytek",
         "url": "https://xinghuo.xfyun.cn/desk",
-        "description": " -language chat, writing, and productivity tools.",
-        "availability": "China-focused; regional sign-in may apply",
+        "description": "asia-language chat, writing, and productivity tools.",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
     },
     {
         "name": "StepFun",
         "company": "StepFun",
         "url": "https://www.stepfun.com/",
         "description": "Multimodal chat, search, creation, and agent tools.",
-        "availability": "China-focused; regional sign-in may apply",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
     },
     {
         "name": "SenseChat",
         "company": "SenseTime",
         "url": "https://chat.sensetime.com/",
         "description": "General-purpose chat and knowledge assistance.",
-        "availability": "China-focused; regional sign-in may apply",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
+    },
+    {
+        "name": "Falcon Chat",
+        "company": "Technology Innovation Institute (UAE)",
+        "url": "https://chat.falconllm.tii.ae/",
+        "description": "Official chat experience for TII's Falcon model family.",
+        "availability": "International portal",
+        "type": "Chat portal",
+    },
+    {
+        "name": "Mistral Vibe",
+        "company": "Mistral AI (France)",
+        "url": "https://chat.mistral.ai/",
+        "description": "Mistral's chat and productivity agent, formerly Le Chat.",
+        "availability": "International portal; free tier available",
+        "type": "Chat portal",
+    },
+    {
+        "name": "Sakana Chat",
+        "company": "Sakana AI (Japan)",
+        "url": "https://chat.sakana.ai/",
+        "description": "Official Japanese-language research chat experience.",
+        "availability": "Japan-focused; availability may vary",
+        "type": "Chat portal",
+    },
+    {
+        "name": "Baixiaoying",
+        "company": "Baichuan AI",
+        "url": "https://ying.baichuan-ai.com/chat",
+        "description": "Baichuan's consumer assistant for chat and search.",
+        "availability": "Mainland asia only",
+        "type": "Chat portal",
+    },
+    {
+        "name": "InternLM Chat",
+        "company": "Shanghai AI Laboratory",
+        "url": "https://chat.intern-ai.org.cn/",
+        "description": "Chat with InternLM, InternVL, and scientific reasoning models.",
+        "availability": "asia-focused; regional sign-in may apply",
+        "type": "Chat portal",
+    },
+    {
+        "name": "Skywork",
+        "company": "Skywork AI",
+        "url": "https://skywork.ai/app",
+        "description": "General chat plus research, documents, slides, and agents.",
+        "availability": "International portal",
+        "type": "Chat portal",
+    },
+    {
+        "name": "AI21 Studio",
+        "company": "AI21 Labs (Israel)",
+        "url": "https://studio.ai21.com/",
+        "description": "Official playground for Jamba chat models.",
+        "availability": "Developer account required; no key pasted into this app",
+        "type": "Developer playground",
+    },
+    {
+        "name": "Cohere Playground",
+        "company": "Cohere (Canada)",
+        "url": "https://dashboard.cohere.com/playground/chat",
+        "description": "Official playground for Command models; Aya availability depends on Cohere's current catalog.",
+        "availability": "Free Cohere account required",
+        "type": "Developer playground",
+    },
+    {
+        "name": "ChatEXAONE Beta",
+        "company": "LG AI Research (South Korea)",
+        "url": "https://chat.exaone.ai/",
+        "description": "Public beta work agent powered by the EXAONE model family.",
+        "availability": "Korea-focused; account or regional access may apply",
+        "type": "Developer playground",
+    },
+    {
+        "name": "SEA-LION Playground",
+        "company": "AI Singapore",
+        "url": "https://playground.sea-lion.ai/",
+        "description": "Explore models designed for Southeast Asian languages and contexts.",
+        "availability": "Sign-in required",
+        "type": "Developer playground",
+    },
+    {
+        "name": "Sarvam Experience",
+        "company": "Sarvam AI (India)",
+        "url": "https://try.sarvam.ai/",
+        "description": "Explore Sarvam's Indian-language voice, reasoning, and agent products.",
+        "availability": "Contact details may be required",
+        "type": "Product / model site",
+    },
+    {
+        "name": "LightOn Paradigm",
+        "company": "LightOn (France)",
+        "url": "https://paradigm.lighton.ai/",
+        "description": "Enterprise workspace for Paradigm chat, search, and agents.",
+        "availability": "Existing customer or trial access required",
+        "type": "Product / model site",
+    },
+    {
+        "name": "Aleph Alpha",
+        "company": "Aleph Alpha (Germany)",
+        "url": "https://aleph-alpha.com/",
+        "description": "Official product site for sovereign enterprise language-model solutions.",
+        "availability": "No current public consumer playground",
+        "type": "Product / model site",
+    },
+    {
+        "name": "StableLM",
+        "company": "Stability AI (UK)",
+        "url": "https://github.com/Stability-AI/StableLM",
+        "description": "Official open-model repository; no maintained first-party browser chat.",
+        "availability": "Model access and self-hosting resources",
+        "type": "Product / model site",
+    },
+    {
+        "name": "Yi Models",
+        "company": "01.AI",
+        "url": "https://github.com/01-ai/Yi",
+        "description": "Official Yi model repository; no current maintained consumer chat portal.",
+        "availability": "Model access and self-hosting resources",
+        "type": "Product / model site",
     },
 ]
 
@@ -155,7 +286,7 @@ def require_password() -> None:
     if st.session_state.get("authenticated", False):
         return
 
-    st.title("  AI Gateway")
+    st.title("AI Gateway")
     st.caption("Enter the shared access password to continue.")
 
     with st.form("login_form", clear_on_submit=True):
@@ -185,29 +316,54 @@ def conversation_key(provider_name: str) -> str:
 
 
 def render_portals() -> None:
-    st.subheader("Official consumer chat portals")
+    st.subheader("Official AI access portals")
     st.write(
-        "Open any provider's own chat website. No API key is needed, although "
-        "the provider may require its normal account, subscription, or regional access."
+        "Open a provider's own chat site, developer playground, or product demo. "
+        "No API key is sent by this app, although the destination may require its "
+        "normal account, subscription, invitation, or regional access."
     )
     st.info(
         "Portal chats open in a new browser tab. Their accounts, conversations, "
         "billing, and privacy terms remain separate from this Streamlit app."
     )
 
+    portal_filter = st.radio(
+        "Show",
+        ["All", "Chat portal", "Developer playground", "Product / model site"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    visible_portals = (
+        PORTALS
+        if portal_filter == "All"
+        else [portal for portal in PORTALS if portal["type"] == portal_filter]
+    )
+
     columns = st.columns(3)
-    for index, portal in enumerate(PORTALS):
+    for index, portal in enumerate(visible_portals):
         with columns[index % 3]:
             with st.container(border=True):
                 st.markdown(f"#### {portal['name']}")
-                st.caption(portal["company"])
+                st.caption(f"{portal['company']} | {portal['type']}")
                 st.write(portal["description"])
                 st.caption(portal["availability"])
                 st.link_button(
-                    f"Open {portal['name']}",
+                    f"Visit {portal['name']}",
                     portal["url"],
                     use_container_width=True,
                 )
+
+    with st.expander("Coverage notes"):
+        st.markdown(
+            "- Tencent Hunyuan is represented by Yuanbao.\n"
+            "- ChatGLM is represented by Z.ai Chat.\n"
+            "- Step-1 and Step-2 are represented by StepFun.\n"
+            "- Jamba is accessed through AI21 Studio.\n"
+            "- Command and Aya are represented by Cohere's playground.\n"
+            "- HyperCLOVA X's CLOVA X consumer service closed on April 9, 2026.\n"
+            "- StableLM and Yi are linked to official model repositories because "
+            "neither currently has a maintained first-party consumer chat portal."
+        )
 
 
 def render_api_chat() -> None:
@@ -291,7 +447,7 @@ def main() -> None:
     require_password()
 
     with st.sidebar:
-        st.header("  AI Gateway")
+        st.header("AI Gateway")
         st.write(
             "Use official consumer portals without API keys, or chat directly "
             "through APIs you have configured."
@@ -304,10 +460,10 @@ def main() -> None:
             "API requests may incur charges on the app owner's provider accounts."
         )
 
-    st.title("  AI Gateway")
+    st.title("AI Gateway")
     st.caption("Official chat portals and private API access in one place.")
 
-    portals_tab, api_tab = st.tabs(["Official chat portals", "API chat"])
+    portals_tab, api_tab = st.tabs(["Official AI portals", "API chat"])
     with portals_tab:
         render_portals()
     with api_tab:
