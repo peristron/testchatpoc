@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import base64
 import hmac
+import json
+from datetime import datetime, timezone
 
 import streamlit as st
 
@@ -42,6 +45,13 @@ PROVIDERS = {
         default_model="glm-4.7-flash",
         model_secret="GLM_MODEL",
     ),
+    "GLM Vision": Provider(
+        name="GLM Vision",
+        api_key_secret="GLM_API_KEY",
+        base_url="https://api.z.ai/api/paas/v4",
+        default_model="glm-4.6v-flash",
+        model_secret="GLM_VISION_MODEL",
+    ),
     "MiniMax": Provider(
         name="MiniMax",
         api_key_secret="MINIMAX_API_KEY",
@@ -71,6 +81,12 @@ PROVIDERS = {
         model_secret="SEALION_MODEL",
     ),
 }
+
+
+MAX_IMAGES_PER_MESSAGE = 3
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
+MAX_TOTAL_IMAGE_BYTES = 10 * 1024 * 1024
+SUPPORTED_IMAGE_TYPES = ["png", "jpg", "jpeg", "webp"]
 
 
 PORTALS = [
@@ -336,6 +352,126 @@ def conversation_key(provider_name: str) -> str:
     return f"messages_{provider_name.lower()}"
 
 
+def provider_supports_images(provider_name: str, model: str) -> bool:
+    """Return whether the selected provider/model accepts image inputs."""
+    normalized_model = model.lower()
+    if provider_name == "GLM Vision":
+        return "v" in normalized_model
+    if provider_name == "Cohere":
+        return "vision" in normalized_model or "command-a-plus" in normalized_model
+    if provider_name == "Mistral":
+        return any(
+            family in normalized_model
+            for family in (
+                "mistral-small",
+                "mistral-medium",
+                "mistral-large",
+                "ministral",
+            )
+        )
+    return False
+
+
+def encode_image(uploaded_file) -> dict[str, object]:
+    """Convert a Streamlit upload to session-safe attachment data."""
+    raw_data = uploaded_file.getvalue()
+    return {
+        "name": uploaded_file.name,
+        "media_type": uploaded_file.type or "image/png",
+        "size_bytes": len(raw_data),
+        "data": base64.b64encode(raw_data).decode("ascii"),
+    }
+
+
+def message_for_api(
+    message: dict[str, object], provider_name: str
+) -> dict[str, object]:
+    """Convert a stored display message to an API-compatible message."""
+    attachments = message.get("attachments") or []
+    if not attachments:
+        return {"role": message["role"], "content": message["content"]}
+
+    content: list[dict[str, object]] = [
+        {"type": "text", "text": str(message["content"])}
+    ]
+    for attachment in attachments:
+        data_url = (
+            f"data:{attachment['media_type']};base64,{attachment['data']}"
+        )
+        if provider_name == "Mistral":
+            image_url: object = data_url
+        else:
+            image_url = {"url": data_url}
+        content.append({"type": "image_url", "image_url": image_url})
+
+    return {"role": message["role"], "content": content}
+
+
+def render_stored_message(message: dict[str, object]) -> None:
+    """Render a chat message and any images kept in session memory."""
+    st.markdown(str(message["content"]))
+    for attachment in message.get("attachments") or []:
+        try:
+            image_data = base64.b64decode(str(attachment["data"]))
+        except (KeyError, ValueError):
+            continue
+        st.image(image_data, caption=str(attachment.get("name", "Uploaded image")))
+
+
+def exportable_message(message: dict[str, object]) -> dict[str, object]:
+    """Remove image bytes while preserving useful attachment metadata."""
+    exported = {
+        "role": message["role"],
+        "content": message["content"],
+    }
+    attachments = message.get("attachments") or []
+    if attachments:
+        exported["attachments"] = [
+            {
+                "name": attachment.get("name", "Uploaded image"),
+                "media_type": attachment.get("media_type", ""),
+                "size_bytes": attachment.get("size_bytes", 0),
+            }
+            for attachment in attachments
+        ]
+    return exported
+
+
+def chat_as_markdown(
+    provider_name: str, model: str, messages: list[dict[str, object]]
+) -> str:
+    """Create a readable transcript for one provider conversation."""
+    lines = [f"# {provider_name} chat", "", f"Model: `{model}`", ""]
+    for message in messages:
+        role = "User" if message["role"] == "user" else "Assistant"
+        lines.extend([f"## {role}", "", str(message["content"]), ""])
+        attachments = message.get("attachments") or []
+        if attachments:
+            names = ", ".join(
+                str(attachment.get("name", "Uploaded image"))
+                for attachment in attachments
+            )
+            lines.extend([f"Attachments: {names}", ""])
+    return "\n".join(lines)
+
+
+def all_chats_as_json() -> str:
+    """Create a portable export of every non-empty provider conversation."""
+    conversations: dict[str, list[dict[str, object]]] = {}
+    for provider_name in PROVIDERS:
+        messages = st.session_state.get(conversation_key(provider_name), [])
+        if messages:
+            conversations[provider_name] = [
+                exportable_message(message) for message in messages
+            ]
+
+    payload = {
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "conversations": conversations,
+    }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
 def render_portals() -> None:
     st.subheader("Official AI access portals")
     st.write(
@@ -390,7 +526,8 @@ def render_portals() -> None:
 def render_api_chat() -> None:
     st.subheader("API chat")
     st.caption(
-        "Chat inside this app using API credentials stored in Streamlit secrets."
+        "Each provider keeps a separate chat for this browser session. Switching "
+        "providers does not delete the other conversations."
     )
 
     available = configured_providers()
@@ -401,7 +538,13 @@ def render_api_chat() -> None:
         )
         return
 
-    provider_name = st.selectbox("API provider", available)
+    provider_name = st.selectbox(
+        "API provider",
+        available,
+        format_func=lambda name: (
+            f"{name} ({len(st.session_state.get(conversation_key(name), []))} messages)"
+        ),
+    )
     provider = PROVIDERS[provider_name]
     api_key = get_secret(provider.api_key_secret)
     model = get_secret(provider.model_secret, provider.default_model)
@@ -410,34 +553,105 @@ def render_api_chat() -> None:
     if key not in st.session_state:
         st.session_state[key] = []
 
-    settings_column, action_column = st.columns([4, 1])
+    settings_column, model_column = st.columns([4, 1])
     with settings_column:
         system_prompt = st.text_area(
             "System instructions",
             value="You are a helpful, accurate assistant.",
             height=100,
         )
-    with action_column:
+    with model_column:
         st.caption(f"Model: `{model}`")
-        if st.button("Clear chat", use_container_width=True):
+
+    messages = st.session_state[key]
+    action_columns = st.columns(3)
+    with action_columns[0]:
+        if st.button("Clear this chat", use_container_width=True):
             st.session_state[key] = []
             st.rerun()
+    with action_columns[1]:
+        st.download_button(
+            "Download this chat",
+            data=chat_as_markdown(provider_name, model, messages),
+            file_name=f"{provider_name.lower().replace(' ', '-')}-chat.md",
+            mime="text/markdown",
+            disabled=not messages,
+            use_container_width=True,
+        )
+    with action_columns[2]:
+        st.download_button(
+            "Download all chats",
+            data=all_chats_as_json(),
+            file_name="ai-gateway-chats.json",
+            mime="application/json",
+            disabled=not any(
+                st.session_state.get(conversation_key(name), [])
+                for name in PROVIDERS
+            ),
+            use_container_width=True,
+        )
+    st.caption(
+        "Downloads include chat text and attachment names, but not the image files."
+    )
 
-    for message in st.session_state[key]:
+    for message in messages:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            render_stored_message(message)
+
+    uploaded_images = []
+    image_enabled = provider_supports_images(provider_name, model)
+    if image_enabled:
+        nonce_key = f"upload_nonce_{provider_name.lower()}"
+        if nonce_key not in st.session_state:
+            st.session_state[nonce_key] = 0
+        uploaded_images = st.file_uploader(
+            "Attach screenshots or images",
+            type=SUPPORTED_IMAGE_TYPES,
+            accept_multiple_files=True,
+            key=f"image_upload_{provider_name}_{st.session_state[nonce_key]}",
+            help=(
+                f"Up to {MAX_IMAGES_PER_MESSAGE} images, 5 MB each and 10 MB total. "
+                "Images are sent to the selected API provider."
+            ),
+        )
+        st.caption(
+            "Attached images stay in this browser session and may be resent to the "
+            "same provider with later messages to preserve context."
+        )
+    else:
+        st.caption(
+            "Image upload is unavailable for this provider's configured model."
+        )
 
     prompt = st.chat_input(f"Message {provider.name}")
     if not prompt:
         return
 
-    st.session_state[key].append({"role": "user", "content": prompt})
+    attachments: list[dict[str, object]] = []
+    if uploaded_images:
+        if len(uploaded_images) > MAX_IMAGES_PER_MESSAGE:
+            st.error(f"Attach no more than {MAX_IMAGES_PER_MESSAGE} images at once.")
+            return
+        total_size = sum(len(upload.getvalue()) for upload in uploaded_images)
+        if any(len(upload.getvalue()) > MAX_IMAGE_BYTES for upload in uploaded_images):
+            st.error("Each image must be 5 MB or smaller.")
+            return
+        if total_size > MAX_TOTAL_IMAGE_BYTES:
+            st.error("The combined image size must be 10 MB or smaller.")
+            return
+        attachments = [encode_image(upload) for upload in uploaded_images]
+
+    user_message: dict[str, object] = {"role": "user", "content": prompt}
+    if attachments:
+        user_message["attachments"] = attachments
+
+    messages.append(user_message)
     with st.chat_message("user"):
-        st.markdown(prompt)
+        render_stored_message(user_message)
 
     request_messages = [
         {"role": "system", "content": system_prompt},
-        *st.session_state[key],
+        *[message_for_api(message, provider_name) for message in messages],
     ]
 
     try:
@@ -451,16 +665,17 @@ def render_api_chat() -> None:
                 )
             )
     except ChatAPIError as exc:
-        st.session_state[key].pop()
+        messages.pop()
         st.error(str(exc))
         return
 
     if response:
-        st.session_state[key].append(
-            {"role": "assistant", "content": str(response)}
-        )
+        messages.append({"role": "assistant", "content": str(response)})
+        if attachments:
+            st.session_state[nonce_key] += 1
+            st.rerun()
     else:
-        st.session_state[key].pop()
+        messages.pop()
         st.warning("The provider returned an empty response. Please try again.")
 
 
