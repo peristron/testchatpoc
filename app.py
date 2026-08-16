@@ -538,13 +538,22 @@ def render_api_chat() -> None:
         )
         return
 
+    provider_state_key = "selected_api_provider"
+    if st.session_state.get(provider_state_key) not in available:
+        st.session_state[provider_state_key] = available[0]
+
     provider_name = st.selectbox(
         "API provider",
         available,
-        format_func=lambda name: (
-            f"{name} ({len(st.session_state.get(conversation_key(name), []))} messages)"
-        ),
+        key=provider_state_key,
     )
+    saved_counts = [
+        f"{name}: {len(st.session_state.get(conversation_key(name), []))}"
+        for name in available
+        if st.session_state.get(conversation_key(name), [])
+    ]
+    if saved_counts:
+        st.caption("Saved this session | " + " | ".join(saved_counts))
     provider = PROVIDERS[provider_name]
     api_key = get_secret(provider.api_key_secret)
     model = get_secret(provider.model_secret, provider.default_model)
