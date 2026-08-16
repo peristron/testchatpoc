@@ -221,7 +221,7 @@ PORTALS = [
     {
         "name": "Skywork",
         "company": "Skywork AI",
-        "url": "https://skywork.ai/app",
+        "url": "https://skywork.ai/?sk_fg=app",
         "description": "General chat plus research, documents, slides, and agents.",
         "availability": "International portal",
         "type": "Chat portal",
