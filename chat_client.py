@@ -45,7 +45,7 @@ def stream_chat(
     provider: Provider,
     api_key: str,
     model: str,
-    messages: list[dict[str, str]],
+    messages: list[dict[str, object]],
 ) -> Iterator[str]:
     """Yield final-answer text from an OpenAI-compatible streaming endpoint."""
     url = f"{provider.base_url.rstrip('/')}/chat/completions"
